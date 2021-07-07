@@ -33,11 +33,11 @@ If running on Colab, adjust the `#@params` in the `Args` class according to the 
 Command for problem 1:
 
 ```
-python cs285/scripts/run_hw1.py \
-	--expert_policy_file cs285/policies/experts/Ant.pkl \
-	--env_name Ant-v2 --exp_name bc_ant --n_iter 1 \
-	--expert_data cs285/expert_data/expert_data_Ant-v2.pkl
-	--video_log_freq -1
+python ./cs285/scripts/run_hw1.py \
+    --expert_policy_file cs285/policies/experts/Ant.pkl \
+    --env_name Ant-v2 --exp_name bc_ant --n_iter 1 \
+    --expert_data cs285/expert_data/expert_data_Ant-v2.pkl \
+    --video_log_freq -1
 ```
 
 Make sure to also try another environment.
@@ -53,7 +53,7 @@ python cs285/scripts/run_hw1.py \
     --expert_policy_file cs285/policies/experts/Ant.pkl \
     --env_name Ant-v2 --exp_name dagger_ant --n_iter 10 \
     --do_dagger --expert_data cs285/expert_data/expert_data_Ant-v2.pkl \
-	--video_log_freq -1
+    --video_log_freq -1
 ```
 
 Make sure to also try another environment.
@@ -75,3 +75,37 @@ tensorboard --logdir data/run1,data/run2,data/run3...
 
 If running on Colab, you will be using the `%tensorboard` [line magic](https://ipython.readthedocs.io/en/stable/interactive/magics.html) to do the same thing; see the [notebook](cs285/scripts/run_hw1.ipynb) for more details.
 
+
+## Q1
+
+Run BC:
+```
+python ./cs285/scripts/run_hw1.py \
+    --expert_policy_file cs285/policies/experts/Ant.pkl \
+    --env_name Ant-v2 --exp_name bc_ant --n_iter 1 \
+    --expert_data cs285/expert_data/expert_data_Ant-v2.pkl 
+```
+
+Run BC (different task):
+```
+python ./cs285/scripts/run_hw1.py \
+    --expert_policy_file cs285/policies/experts/Hopper.pkl \
+    --env_name Hopper-v2 --exp_name bc_hopper --n_iter 1 \
+    --expert_data cs285/expert_data/expert_data_Hopper-v2.pkl 
+```
+
+Run DAgger:
+```
+python ./cs285/scripts/run_hw1.py \
+    --expert_policy_file cs285/policies/experts/Ant.pkl \
+    --env_name Ant-v2 --exp_name dagger_ant --n_iter 15 \
+    --do_dagger --expert_data cs285/expert_data/expert_data_Ant-v2.pkl 
+```
+
+Run DAgger (different task):
+```
+python ./cs285/scripts/run_hw1.py \
+    --expert_policy_file cs285/policies/experts/Hopper.pkl \
+    --env_name Hopper-v2 --exp_name dagger_hopper --n_iter 20 \
+    --do_dagger --expert_data cs285/expert_data/expert_data_Hopper-v2.pkl 
+```
