@@ -175,11 +175,6 @@ class RL_Trainer(object):
                 # ``` return loaded_paths, 0, None ```
 
         # Return expert data directly
-        if iter == 0:
-            with open(load_initial_expertdata, "rb") as _f:
-                expert_data: T.List[RL_PATH] = pickle.load(_f)
-            return expert_data, 0, None
-
                 # (2) collect `self.params['batch_size']` transitions
 
         # collect `batch_size` samples to be used for training
@@ -189,8 +184,8 @@ class RL_Trainer(object):
         paths, envsteps_this_batch = utils.sample_trajectories(
             self.env,
             self.agent.actor,
-            self.params['ep_len'],
             batch_size,
+            self.params['ep_len'],
         )
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard

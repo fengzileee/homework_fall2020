@@ -1,3 +1,4 @@
+import typing as T
 import abc
 import itertools
 from torch import nn
@@ -84,16 +85,17 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
 
     ##################################
 
-    # query the policy with observation(s) to get selected action(s)
+    # query the policy with one observation to get selected action
     def get_action(self, obs: np.ndarray) -> np.ndarray:
-        if len(obs.shape) > 1:
-            observation = obs
-        else:
-            observation = obs[None]
-
         # Return the action that the policy prescribes
-        output = self.mean_net(ptu.from_numpy(observation))
-        return ptu.to_numpy(output)
+        if self.discrete:
+            output = self.logits_na(ptu.from_numpy(obs))
+            action_probs = F.log_softmax(output).exp()
+            action = torch.multinomial(action_probs, num_samples = 1)[0]
+        else:
+            output = self.mean_net(ptu.from_numpy(obs))
+            action = torch.normal(output, self.logstd)
+        return ptu.to_numpy(action)
 
     # update/train this policy
     def update(self, observations, actions, **kwargs):
@@ -104,8 +106,11 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # through it. For example, you can return a torch.FloatTensor. You can also
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
-    def forward(self, observation: torch.FloatTensor) -> Any:
-        return self.mean_net(observation)
+    def forward(self, observation: torch.FloatTensor) -> T.Any:
+        if self.discrete:
+            return self.logits_na(observation)
+        else:
+            return self.mean_net(observation)
 
 
 #####################################################
@@ -122,7 +127,7 @@ class MLPPolicyPG(MLPPolicy):
         actions = ptu.from_numpy(actions)
         advantages = ptu.from_numpy(advantages)
 
-        # TODO: compute the loss that should be optimized when training with policy gradient
+        # compute the loss that should be optimized when training with policy gradient
         # HINT1: Recall that the expression that we want to MAXIMIZE
             # is the expectation over collected trajectories of:
             # sum_{t=0}^{T-1} [grad [log pi(a_t|s_t) * (Q_t - b_t)]]
@@ -130,11 +135,16 @@ class MLPPolicyPG(MLPPolicy):
             # by the `forward` method
         # HINT3: don't forget that `optimizer.step()` MINIMIZES a loss
 
-        loss = TODO
-
-        # TODO: optimize `loss` using `self.optimizer`
-        # HINT: remember to `zero_grad` first
-        TODO
+        self.optimizer.zero_grad()
+        out = self.forward(observations)
+        if self.discrete:
+            probs = F.log_softmax(out).exp()
+            log_prob = distributions.Categorical(probs=probs).log_prob(actions)
+            loss = (-log_prob * advantages).mean()
+            loss.backward()
+            self.optimizer.step()
+        else:
+            raise NotImplementedError
 
         if self.nn_baseline:
             ## TODO: normalize the q_values to have a mean of zero and a standard deviation of one

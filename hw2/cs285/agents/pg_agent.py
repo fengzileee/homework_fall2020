@@ -1,5 +1,6 @@
+import typing as T
 import numpy as np
-
+import cs285.infrastructure.utils as utils
 from .base_agent import BaseAgent
 from cs285.policies.MLP_policy import MLPPolicyPG
 from cs285.infrastructure.replay_buffer import ReplayBuffer
@@ -44,9 +45,9 @@ class PGAgent(BaseAgent):
         # step 2: calculate advantages that correspond to each (s_t, a_t) point
         advantages = self.estimate_advantage(observations, q_values)
 
-        # TODO: step 3: use all datapoints (s_t, a_t, q_t, adv_t) to update the PG actor/policy
+        # step 3: use all datapoints (s_t, a_t, q_t, adv_t) to update the PG actor/policy
         ## HINT: `train_log` should be returned by your actor update method
-        train_log = TODO
+        train_log = self.actor.update(observations, actions, advantages, q_values)
 
         return train_log
 
@@ -90,8 +91,8 @@ class PGAgent(BaseAgent):
             ## baseline was trained with standardized q_values, so ensure that the predictions
             ## have the same mean and standard deviation as the current batch of q_values
             baselines = baselines_unnormalized * np.std(q_values) + np.mean(q_values)
-            ## TODO: compute advantage estimates using q_values and baselines
-            advantages = TODO
+            ## compute advantage estimates using q_values and baselines
+            advantages = q_values - baselines
 
         # Else, just set the advantage to [Q]
         else:
@@ -99,10 +100,12 @@ class PGAgent(BaseAgent):
 
         # Normalize the resulting advantages
         if self.standardize_advantages:
-            ## TODO: standardize the advantages to have a mean of zero
+            ## standardize the advantages to have a mean of zero
             ## and a standard deviation of one
             ## HINT: there is a `normalize` function in `infrastructure.utils`
-            advantages = TODO
+            mean_A = np.mean(advantages)
+            std_A = np.std(advantages)
+            advantages = utils.normalize(advantages, mean_A, std_A)
 
         return advantages
 
@@ -128,24 +131,50 @@ class PGAgent(BaseAgent):
             Output: list where each index t contains sum_{t'=0}^T gamma^t' r_{t'}
         """
 
-        # TODO: create list_of_discounted_returns
+        # create list_of_discounted_returns
         # Hint: note that all entries of this output are equivalent
             # because each sum is from 0 to T (and doesnt involve t)
-
-        return list_of_discounted_returns
+        return discounted_return(rewards, self.gamma)
 
     def _discounted_cumsum(self, rewards):
         """
             Helper function which
             -takes a list of rewards {r_0, r_1, ..., r_t', ... r_T},
-            -and returns a list where the entry in each index t' is sum_{t'=t}^T gamma^(t'-t) * r_{t'}
+            -and returns a list where the entry in each index t is sum_{t'=t}^T gamma^(t'-t) * r_{t'}
         """
 
-        # TODO: create `list_of_discounted_returns`
+        # create `list_of_discounted_returns`
         # HINT1: note that each entry of the output should now be unique,
             # because the summation happens over [t, T] instead of [0, T]
         # HINT2: it is possible to write a vectorized solution, but a solution
             # using a for loop is also fine
 
-        return list_of_discounted_cumsums
+        return discounted_cumsum(rewards, self.gamma)
 
+
+def discounted_return(rewards: T.List[float], discount_factor: float):
+    exp_of_discount_factor = 1
+    summation = 0.0
+    for r in rewards:
+        summation += exp_of_discount_factor * r
+        exp_of_discount_factor = discount_factor * exp_of_discount_factor
+    list_of_discounted_returns = [summation] * len(rewards)
+    return list_of_discounted_returns
+
+
+def discounted_cumsum(rewards: T.List[float], discount_factor: float) -> T.List[float]:
+    list_of_discounted_cumsums = []
+    list_of_exp = []
+    exp = 1
+    for _ in rewards:
+        list_of_exp.append(exp)
+        exp = exp * discount_factor
+    exp = np.array(list_of_exp)
+    rew = np.array(rewards)
+
+    for i in range(len(rewards)):
+        list_of_discounted_cumsums.append(
+            (exp[0:len(rewards)-i] * rew[i:]).sum()
+        )
+
+    return list_of_discounted_cumsums

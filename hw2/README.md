@@ -26,3 +26,42 @@ You will be running your policy gradients implementation in four experiments tot
 ## Plotting your results
 
 We have provided a snippet that may be used for reading your Tensorboard eventfiles in [scripts/read_results.py](cs285/scripts/read_results.py). Reading these eventfiles and plotting them with [matplotlib](https://matplotlib.org/) or [seaborn](https://seaborn.pydata.org/) will produce the cleanest results for your submission. For debugging purposes, we recommend visualizing the Tensorboard logs using `tensorboard --logdir data`.
+
+
+## Q5
+
+### Exp 1
+
+``` sh
+python cs285/scripts/run_hw2.py --env_name CartPole-v0 -n 100 -b 1000 \
+    -dsa --exp_name q1_sb_no_rtg_dsa\
+    --video_log_freq -1
+    
+python cs285/scripts/run_hw2.py --env_name CartPole-v0 -n 100 -b 1000 \
+    -rtg -dsa --exp_name q1_sb_rtg_dsa\
+    --video_log_freq -1
+    
+python cs285/scripts/run_hw2.py --env_name CartPole-v0 -n 100 -b 1000 \
+    -rtg --exp_name q1_sb_rtg_na\
+    --video_log_freq -1
+    
+python cs285/scripts/run_hw2.py --env_name CartPole-v0 -n 100 -b 5000 \
+    -dsa --exp_name q1_lb_no_rtg_dsa\
+    --video_log_freq -1
+
+python cs285/scripts/run_hw2.py --env_name CartPole-v0 -n 100 -b 5000 \
+    -rtg -dsa --exp_name q1_lb_rtg_dsa\
+    --video_log_freq -1
+
+python cs285/scripts/run_hw2.py --env_name CartPole-v0 -n 100 -b 5000 \
+    -rtg --exp_name q1_lb_rtg_na\
+    --video_log_freq -1
+```
+
+### Exp 2
+
+``` sh
+python cs285/scripts/run_hw2.py --env_name InvertedPendulum-v2 \
+    --ep_len 1000 --discount 0.9 -n 100 -l 2 -s 64 -b 100 -lr 0.005 -rtg \
+    --exp_name q2_b100_r005
+```
