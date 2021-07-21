@@ -62,6 +62,6 @@ python cs285/scripts/run_hw2.py --env_name CartPole-v0 -n 100 -b 5000 \
 
 ``` sh
 python cs285/scripts/run_hw2.py --env_name InvertedPendulum-v2 \
-    --ep_len 1000 --discount 0.9 -n 100 -l 2 -s 64 -b 100 -lr 0.005 -rtg \
-    --exp_name q2_b100_r005
+    --ep_len 1000 --discount 0.99 -n 100 -l 2 -s 64 -b 1000 -lr 0.005 -rtg \
+    --exp_name q2_b1000_r005
 ```

@@ -88,13 +88,12 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # query the policy with one observation to get selected action
     def get_action(self, obs: np.ndarray) -> np.ndarray:
         # Return the action that the policy prescribes
+        output = self.forward(ptu.from_numpy(obs))
         if self.discrete:
-            output = self.logits_na(ptu.from_numpy(obs))
-            action_probs = F.log_softmax(output).exp()
+            action_probs = F.log_softmax(output, dim=0).exp()
             action = torch.multinomial(action_probs, num_samples = 1)[0]
         else:
-            output = self.mean_net(ptu.from_numpy(obs))
-            action = torch.normal(output, self.logstd)
+            action = torch.normal(*output)
         return ptu.to_numpy(action)
 
     # update/train this policy
@@ -110,7 +109,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         if self.discrete:
             return self.logits_na(observation)
         else:
-            return self.mean_net(observation)
+            return (self.mean_net(observation), self.logstd.exp())
 
 
 #####################################################
@@ -140,11 +139,13 @@ class MLPPolicyPG(MLPPolicy):
         if self.discrete:
             probs = F.log_softmax(out).exp()
             log_prob = distributions.Categorical(probs=probs).log_prob(actions)
-            loss = (-log_prob * advantages).mean()
-            loss.backward()
-            self.optimizer.step()
         else:
-            raise NotImplementedError
+            log_prob = distributions.Normal(*out).log_prob(actions).flatten()
+
+        assert log_prob.shape == advantages.shape
+        loss = (-log_prob * advantages).mean()
+        loss.backward()
+        self.optimizer.step()
 
         if self.nn_baseline:
             ## TODO: normalize the q_values to have a mean of zero and a standard deviation of one
