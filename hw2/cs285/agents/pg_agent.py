@@ -41,13 +41,17 @@ class PGAgent(BaseAgent):
 
         # step 1: calculate q values of each (s_t, a_t) point, using rewards (r_0, ..., r_t, ..., r_T)
         q_values = self.calculate_q_vals(rewards_list)
+        rewards = np.concatenate(rewards_list)
+        assert rewards.shape == q_values.shape
 
         # step 2: calculate advantages that correspond to each (s_t, a_t) point
         advantages = self.estimate_advantage(observations, q_values)
 
         # step 3: use all datapoints (s_t, a_t, q_t, adv_t) to update the PG actor/policy
         ## HINT: `train_log` should be returned by your actor update method
-        train_log = self.actor.update(observations, actions, advantages, q_values)
+        train_log = self.actor.update(
+            observations, actions, advantages, q_values, rewards, self.gamma
+        )
 
         return train_log
 
@@ -92,6 +96,7 @@ class PGAgent(BaseAgent):
             ## have the same mean and standard deviation as the current batch of q_values
             baselines = baselines_unnormalized * np.std(q_values) + np.mean(q_values)
             ## compute advantage estimates using q_values and baselines
+            assert q_values.shape == baselines.shape
             advantages = q_values - baselines
 
         # Else, just set the advantage to [Q]
