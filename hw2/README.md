@@ -77,9 +77,35 @@ python cs285/scripts/run_hw2.py --env_name CartPole-v0 -n 100 -b 1000 \
 
 ## Q7
 
+### Exp 3
+
 ``` sh
 python cs285/scripts/run_hw2.py \
     --env_name LunarLanderContinuous-v2 --ep_len 1000 \
     --discount 0.99 -n 100 -l 2 -s 64 -b 40000 -lr 0.005 \
     --reward_to_go --nn_baseline --exp_name q3_b40000_r0.005
 ```
+
+### Exp 4
+
+``` sh
+python cs285/scripts/run_hw2.py --env_name HalfCheetah-v2 --ep_len 150 \
+    --discount 0.95 -n 100 -l 2 -s 32 -b 80000 -lr 0.05\
+    --exp_name q4_nothing
+
+python cs285/scripts/run_hw2.py --env_name HalfCheetah-v2 --ep_len 150 \
+    --discount 0.95 -n 100 -l 2 -s 32 -b 80000 -lr 0.05\
+    -rtg \
+    --exp_name q4_rtg
+
+python cs285/scripts/run_hw2.py --env_name HalfCheetah-v2 --ep_len 150 \
+    --discount 0.95 -n 100 -l 2 -s 32 -b 80000 -lr 0.05\
+    --nn_baseline \
+    --exp_name q4_nnbaseline
+
+python cs285/scripts/run_hw2.py --env_name HalfCheetah-v2 --ep_len 150 \
+    --discount 0.95 -n 100 -l 2 -s 32 -b 80000 -lr 0.05\
+    -rtg --nn_baseline \
+    --exp_name q4_rtg_nnbaseline
+```
+
