@@ -180,8 +180,8 @@ class RL_Trainer(object):
         paths, envsteps_this_batch = utils.sample_trajectories(
             self.env,
             self.agent.actor,
-            self.params['ep_len'],
             batch_size,
+            self.params['ep_len'],
         )
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
